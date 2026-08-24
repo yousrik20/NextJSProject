@@ -11,7 +11,7 @@ const Products = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await fetch("http://localhost:3000/api/getProducts");
+      const res = await fetch("/api/getProducts");
 
       if (!res.ok) {
         notFound();

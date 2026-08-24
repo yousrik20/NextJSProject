@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-
 const UpdateForm = ({ productId }) => {
   const router = useRouter();
 
@@ -16,65 +15,55 @@ const UpdateForm = ({ productId }) => {
   const [error, seterror] = useState(null);
 
   const handleSubmit = async (eo) => {
-    console.log(title, price, description)
+    console.log(title, price, description);
     eo.preventDefault();
     setisLoading(true);
     seterror(null);
 
-
-    if (!title || !price  || !description) {
+    if (!title || !price || !description) {
       seterror("All input must be filled");
       setisLoading(false);
       return;
     }
 
+    // Go to api/register/route.js
+    const response = await fetch("/api/updateProduct", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title,
+        price,
+        description,
+        productId,
+      }),
+    });
 
-  // Go to api/register/route.js
-  const response = await fetch("http://localhost:3000/api/updateProduct", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      title,
-      price,
-      description,
-      productId
-    }),
-  });
+    if (response.ok) {
+      toast.success("product updated successfully");
+      router.push("/");
+    } else {
+      setisLoading(false);
+      seterror("faild to Update product, Please try again");
+    }
 
- 
-  if (response.ok) {
-   toast.success("product updated successfully")
-    router.push("/");
-  } else {
     setisLoading(false);
-    seterror("faild to Update product, Please try again");
-  }
-
-  setisLoading(false);
-
-
-    
   };
 
   const [data, setData] = useState(null);
- 
 
   useEffect(() => {
     const getData = async (productId) => {
-      const res = await fetch(
-        `http://localhost:3000/api/getOneProduct?id=${productId}`
-      );
+      const res = await fetch(`/api/getOneProduct?id=${productId}`);
       if (!res.ok) {
         notFound();
       }
       const data = await res.json();
       setData(data);
-      setTitle(data.title)
-      setPrice(data.price)
-      setDescription(data.description)
-
+      setTitle(data.title);
+      setPrice(data.price);
+      setDescription(data.description);
     };
     getData(productId);
   }, [productId]);

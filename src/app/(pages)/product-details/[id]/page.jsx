@@ -8,8 +8,10 @@ import Image from "next/image.js";
 import AdminBtn from "./adminBtn";
 
 async function getData(iddd) {
-  const res = await fetch(`http://localhost:3000/api/getOneProduct?id=${iddd}`);
-
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const res = await fetch(`${baseUrl}/api/getOneProduct?id=${iddd}`, {
+    cache: "no-store", // لتجنب التخزين المؤقت للبيانات الديناميكية
+  });
   if (!res.ok) {
     notFound();
   }
