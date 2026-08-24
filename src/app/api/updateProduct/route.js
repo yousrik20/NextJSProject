@@ -1,34 +1,25 @@
- 
 import ProductModal from "app/DBconfig/models/product";
 import { connectMongoDB } from "app/DBconfig/mongoDB";
 import { NextResponse } from "next/server";
-
-
-
-
-
-
+import { revalidatePath } from "next/cache"; // 1. Import revalidatePath
 
 export async function PUT(request) {
-  // 1- Receive data from Front-end
-  console.log("kkkkkkkkkkkkkkkkkkkkkkkkk")
   const objFromFrontEnd = await request.json();
-  console.log(objFromFrontEnd);
 
-  // 2- connect to DB
   await connectMongoDB();
 
- 
-  // 4- Try to Store obj to DB
-  await ProductModal.updateOne({_id: objFromFrontEnd.productId}, {
-    title: objFromFrontEnd.title,
-    price: objFromFrontEnd.price,
-    description: objFromFrontEnd.description,
-  });
+  await ProductModal.updateOne(
+    { _id: objFromFrontEnd.productId },
+    {
+      title: objFromFrontEnd.title,
+      price: objFromFrontEnd.price,
+      description: objFromFrontEnd.description,
+    }
+  );
 
+  // 2. Revalidate home page and product details cache
+  revalidatePath("/");
+  revalidatePath(`/product-details/${objFromFrontEnd.productId}`);
 
- 
-
-  // 5- Go back to frontend
-  return NextResponse.json({});
+  return NextResponse.json({ message: "Product updated successfully" });
 }
