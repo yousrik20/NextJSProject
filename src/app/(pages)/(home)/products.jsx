@@ -11,8 +11,8 @@ const Products = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await fetch("/api/getProducts");
-cache: "no-store", // Prevents persistent caching
+      const res = await fetch("/api/getProducts",cache: "no-store");
+// Prevents persistent caching
       if (!res.ok) {
         notFound();
       }
