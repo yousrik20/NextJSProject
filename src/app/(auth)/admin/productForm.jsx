@@ -4,10 +4,9 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 
 const ProductForm = () => {
-const [img, setImg] = useState(null);
+  const router = useRouter(); // Initialize router
 
-
-
+  const [img, setImg] = useState(null);
   const [title, setTitle] = useState(null);
   const [price, setPrice] = useState(null);
   const [description, setDescription] = useState(null);
@@ -15,51 +14,49 @@ const [img, setImg] = useState(null);
   const [isLoading, setisLoading] = useState(false);
   const [error, seterror] = useState(null);
 
-
   const handleSubmit = async (eo) => {
-    console.log(img)
-
-
     eo.preventDefault();
     setisLoading(true);
     seterror(null);
 
-    if (!title || !price  || !description) {
-      seterror("All input must be filled");
+    if (!img || !title || !price || !description) {
+      seterror("All inputs including image must be filled");
       setisLoading(false);
       return;
     }
 
-
     const formData = new FormData();
-    formData.set("productImg", img)
-    formData.set("title", title)
-    formData.set("price", price)
-    formData.set("description", description)
+    formData.set("productImg", img);
+    formData.set("title", title);
+    formData.set("price", price);
+    formData.set("description", description);
 
-       // Go to api/addProduct/route.js
-   const resAddProduct = await fetch("api/addProduct", {
-    method: "POST",
+    try {
+      // 🟢 Fix 1: Added leading slash to API route path
+      const resAddProduct = await fetch("/api/addProduct", {
+        method: "POST",
+        body: formData,
+      });
 
-    body:  formData,
-  });
+      const data = await resAddProduct.json();
 
-  const data = await resAddProduct.json();
-  console.log(data)
-
-
-
-  if (resAddProduct.ok) {
-    eo.target.reset();
-    toast.success(data.message);
-
-  } else {
-    setisLoading(false);
-    seterror("faild to add Product, Please try again");
-  }
- 
-
-  setisLoading(false)
+      if (resAddProduct.ok) {
+        eo.target.reset();
+        toast.success(data.message || "Product added successfully!");
+        
+        // 🟢 Fix 2: Redirect and refresh server data
+        router.push("/");
+        router.refresh();
+      } else {
+        setisLoading(false);
+        seterror(data.message || "Failed to add Product, Please try again");
+      }
+    } catch (err) {
+      console.error(err);
+      seterror("An unexpected error occurred. Please try again.");
+    } finally {
+      setisLoading(false);
+    }
   };
 
   return (
@@ -70,15 +67,15 @@ const [img, setImg] = useState(null);
         </label>
         <input
           onChange={(eo) => {
-            setImg(eo.target.files[0])
+            setImg(eo.target.files[0]);
           }}
           required
           type="file"
           className="form-control"
           id="username"
-          aria-describedby="emailHelp"
         />
       </div>
+
       <div className="mb-4">
         <label htmlFor="exampleInputEmail1" className="form-label">
           Product Title:
@@ -86,25 +83,25 @@ const [img, setImg] = useState(null);
         <input
           required
           onChange={(eo) => {
-            setTitle(eo.target.value)
+            setTitle(eo.target.value);
           }}
           type="text"
           className="form-control"
           id="exampleInputEmail1"
-          aria-describedby="emailHelp"
           placeholder="T-shirt"
         />
       </div>
+
       <div className="mb-4">
         <label htmlFor="exampleInputPassword1" className="form-label">
           Product Price:
         </label>
         <input
-        step={0.01}
+          step={0.01}
           placeholder="$99.99"
           required
           onChange={(eo) => {
-            setPrice(eo.target.value)
+            setPrice(eo.target.value);
           }}
           type="number"
           className="form-control"
@@ -113,29 +110,23 @@ const [img, setImg] = useState(null);
       </div>
 
       <div className="mb-4">
-        <label htmlFor="exampleInputPassword1" className="form-label">
+        <label htmlFor="exampleInputDescription" className="form-label">
           Product Description:
         </label>
-
         <textarea
           placeholder="Product Description....."
           required
           onChange={(eo) => {
-            setDescription(eo.target.value)
+            setDescription(eo.target.value);
           }}
           rows={3}
           className="form-control"
-          id="exampleInputPassword1"
+          id="exampleInputDescription"
         />
       </div>
 
-      <button
-        // disabled={!name || !email || !password}
-        type="submit"
-        className="btn btn-primary"
-      >
+      <button type="submit" className="btn btn-primary" disabled={isLoading}>
         {isLoading ? (
-     
           <div
             style={{ width: "1.5rem", height: "1.5rem" }}
             className="spinner-border"
@@ -148,10 +139,11 @@ const [img, setImg] = useState(null);
         )}
       </button>
 
-      <p style={{ color: "#ff7790", fontSize: "1.1rem", marginTop: "1rem" }}>
-        {" "}
-        {error}
-      </p>
+      {error && (
+        <p style={{ color: "#ff7790", fontSize: "1.1rem", marginTop: "1rem" }}>
+          {error}
+        </p>
+      )}
     </form>
   );
 };
