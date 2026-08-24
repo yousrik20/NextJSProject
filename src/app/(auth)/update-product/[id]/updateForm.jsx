@@ -40,10 +40,11 @@ const UpdateForm = ({ productId }) => {
       }),
     });
 
-    if (response.ok) {
-      toast.success("product updated successfully");
-      router.push("/");
-    } else {
+   if (response.ok) {
+  toast.success("Product updated successfully");
+  router.push("/");
+  router.refresh(); // Forces Next.js to fetch updated data for the target page
+}else {
       setisLoading(false);
       seterror("faild to Update product, Please try again");
     }
