@@ -7,20 +7,18 @@ import { notFound } from "next/navigation";
 import Image from "next/image.js";
 import AdminBtn from "./adminBtn";
 
-// 1. Import your DB connector & Model directly
-import connectDB from "DBconfig/models/mongoDB"; // Verify this exact path from your project structure
-import Product from "DBconfig/models/product";
+// Import your DB connection and Model (Adjust relative paths to match your folder structure)
+import { connectMongoDB } from "app/DBconfig/mongoDB";
+import ProductModal from "app/DBconfig/models/product";
 
 async function getProductData(id) {
   try {
-    await connectDB();
-    const product = await Product.findById(id).lean();
+    await connectMongoDB();
+    const product = await ProductModal.findById(id).lean();
 
-    if (!product) {
-      return null;
-    }
+    if (!product) return null;
 
-    // Convert MongoDB _id Object to string to prevent serialization issues
+    // Convert MongoDB Object _id to plain string to avoid Next.js serialization warnings
     return JSON.parse(JSON.stringify(product));
   } catch (error) {
     console.error("Error fetching product:", error);
