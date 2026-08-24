@@ -2,25 +2,36 @@ import Footer from "components/footer/footer";
 import Header from "components/header/header";
 import "./product-details.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCartPlus, faPen, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCartPlus } from "@fortawesome/free-solid-svg-icons";
 import { notFound } from "next/navigation";
 import Image from "next/image.js";
 import AdminBtn from "./adminBtn";
 
-async function getData(iddd) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/getOneProduct?id=${iddd}`, {
-    cache: "no-store", // لتجنب التخزين المؤقت للبيانات الديناميكية
-  });
-  if (!res.ok) {
-    notFound();
-  }
+// 1. Import your DB connector & Model directly
+import connectDB from "DBconfig/models/mongoDB"; // Verify this exact path from your project structure
+import Product from "DBconfig/models/product";
 
-  return res.json();
+async function getProductData(id) {
+  try {
+    await connectDB();
+    const product = await Product.findById(id).lean();
+
+    if (!product) {
+      return null;
+    }
+
+    // Convert MongoDB _id Object to string to prevent serialization issues
+    return JSON.parse(JSON.stringify(product));
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }) {
-  const objData = await getData(params.id);
+  const objData = await getProductData(params.id);
+  if (!objData) return { title: "Product Not Found" };
+
   return {
     title: objData.title,
     description: objData.description,
@@ -28,8 +39,11 @@ export async function generateMetadata({ params }) {
 }
 
 const Page = async ({ params }) => {
-  const objData = await getData(params.id);
-  console.log(objData);
+  const objData = await getProductData(params.id);
+
+  if (!objData) {
+    notFound();
+  }
 
   return (
     <div
@@ -49,8 +63,8 @@ const Page = async ({ params }) => {
             width={266}
             height={270}
             quality={100}
-            alt=""
-            src={`${objData.productImg}`}
+            alt={objData.title || "Product Image"}
+            src={objData.productImg}
           />
           <div className="product-details">
             <div style={{ justifyContent: "space-between" }} className="flex">
