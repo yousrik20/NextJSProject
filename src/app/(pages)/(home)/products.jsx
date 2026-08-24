@@ -1,4 +1,5 @@
 "use client";
+
 import { faCartPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Link from "next/link";
@@ -11,8 +12,9 @@ const Products = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const res = await fetch("/api/getProducts",cache: "no-store");
-// Prevents persistent caching
+      // 🟢 Options object passed correctly in fetch
+      const res = await fetch("/api/getProducts", { cache: "no-store" });
+
       if (!res.ok) {
         notFound();
       }
@@ -26,7 +28,7 @@ const Products = () => {
 
   return (
     <section className="products flex">
-      {arrData.length == 0 && <p>No products Found!</p>}
+      {arrData.length === 0 && <p>No products Found!</p>}
 
       {arrData.map((item) => {
         return (
@@ -37,13 +39,13 @@ const Products = () => {
                 width={266}
                 height={260}
                 src={item.productImg}
-                alt=""
+                alt={item.title || "Product Image"}
               />
             </Link>
             <div style={{ width: "266px" }} className="content">
-              <h4 className="title">{item.title.slice(0, 15)}...</h4>
+              <h4 className="title">{item.title?.slice(0, 15)}...</h4>
               <p className="description">
-                {item.description.slice(0, 111)}....
+                {item.description?.slice(0, 111)}....
               </p>
               <div
                 className="flex"
